@@ -54,6 +54,14 @@ Make the Minecraft context fun — use Creepers, Steve, building, mining, redsto
       res.on('end', () => {
         try {
           const parsed = JSON.parse(data);
+          if (parsed.error) {
+            resolve({
+              statusCode: 200,
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ question: 'API Error: ' + parsed.error.message, options: ['A) '+parsed.error.type,'B) Check API key','C) Check billing','D) Contact support'], answer: 'A', explanation: data, topic: 'error', subject: subject })
+            });
+            return;
+          }
           const raw = parsed.content.map(c => c.text || '').join('');
           const clean = raw.replace(/```json|```/g, '').trim();
           const question = JSON.parse(clean);
@@ -64,8 +72,9 @@ Make the Minecraft context fun — use Creepers, Steve, building, mining, redsto
           });
         } catch(err) {
           resolve({
-            statusCode: 500,
-            body: JSON.stringify({ error: 'Parse error', detail: err.message, raw: data })
+            statusCode: 200,
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ question: 'Parse error: ' + err.message, options: ['A) raw: '+data.substring(0,50),'B) -','C) -','D) -'], answer: 'A', explanation: data, topic: 'error', subject: subject })
           });
         }
       });
@@ -73,8 +82,9 @@ Make the Minecraft context fun — use Creepers, Steve, building, mining, redsto
 
     req.on('error', (err) => {
       resolve({
-        statusCode: 500,
-        body: JSON.stringify({ error: 'Request error', detail: err.message })
+        statusCode: 200,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ question: 'Network error: ' + err.message, options: ['A) error','B) -','C) -','D) -'], answer: 'A', explanation: err.message, topic: 'error', subject: subject })
       });
     });
 
