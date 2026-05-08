@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SATs Quest ⛏</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Press Start 2P', monospace;
+      background: #1a1a2e;
+      min-height: 100vh;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .mc-wrap {
+      background: #1a1a2e;
+      width: 100%;
+      max-width: 600px;
+      color: #fff;
+    }
+
+    .mc-header { text-align: center; margin-bottom: 20px; }
+    .mc-title { font-size: 18px; color: #5dde2e; text-shadow: 3px 3px #2a6010; line-height: 1.6; }
+    .mc-subtitle { font-size: 8px; color: #aaa; margin-top: 8px; }
+
+    .xp-bar-wrap { background: #111; border: 2px solid #5dde2e; border-radius: 4px; height: 18px; margin: 10px 0; overflow: hidden; }
+    .xp-bar { height: 100%; background: linear-gradient(90deg, #5dde2e, #a0ff60); transition: width 0.6s ease; }
+    .xp-label { font-size: 7px; color: #5dde2e; text-align: center; margin-bottom: 12px; }
+
+    .stats-row { display: flex; gap: 10px; margin-bottom: 16px; }
+    .stat-box { flex: 1; background: #0d1117; border: 2px solid #333; border-radius: 4px; padding: 8px; text-align: center; }
+    .stat-label { font-size: 6px; color: #aaa; margin-bottom: 4px; }
+    .stat-val { font-size: 11px; color: #fff; }
+    .stat-val.green { color: #5dde2e; }
+    .stat-val.gold { color: #ffd700; }
+    .stat-val.blue { color: #60aaff; }
+
+    .subject-btns { display: flex; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; }
+    .subj-btn {
+      flex: 1; min-width: 120px;
+      font-family: 'Press Start 2P', monospace; font-size: 7px;
+      padding: 12px 6px; border: 2px solid #555; border-radius: 4px;
+      cursor: pointer; background: #1a1a2e; color: #aaa; transition: all 0.15s; line-height: 2;
+    }
+    .subj-btn.maths { border-color: #ffd700; color: #ffd700; background: #1a1500; }
+    .subj-btn.english { border-color: #60aaff; color: #60aaff; background: #001220; }
+    .subj-btn.mixed { border-color: #a060ff; color: #c090ff; background: #110d1a; }
+    .subj-btn:hover { opacity: 0.85; transform: scale(1.02); }
+
+    .badge-row { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 16px; }
+    .badge { font-size: 6px; padding: 4px 8px; border-radius: 3px; background: #1a1a2e; border: 1.5px solid #333; color: #555; }
+    .badge.earned { border-color: #ffd700; color: #ffd700; background: #1a1500; }
+
+    .question-card {
+      background: #0d1117; border: 2px solid #5dde2e; border-radius: 6px;
+      padding: 16px; margin-bottom: 14px; min-height: 110px;
+      display: flex; align-items: flex-start; gap: 10px;
+    }
+    .mc-icon { font-size: 32px; flex-shrink: 0; margin-top: 2px; }
+    .q-text { font-size: 9px; color: #e8e8e8; line-height: 2; flex: 1; }
+    .q-loading { color: #5dde2e; animation: blink 0.8s infinite; }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+    .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 14px; }
+    .opt-btn {
+      font-family: 'Press Start 2P', monospace; font-size: 8px;
+      padding: 11px 8px; background: #1a1a2e; border: 2px solid #444;
+      border-radius: 4px; color: #ccc; cursor: pointer; text-align: left; line-height: 1.7; transition: all 0.12s;
+    }
+    .opt-btn:hover:not(:disabled) { border-color: #5dde2e; color: #fff; background: #0d1f0d; }
+    .opt-btn.correct { border-color: #5dde2e; background: #0d3010; color: #a0ff80; }
+    .opt-btn.wrong { border-color: #e24b4a; background: #200d0d; color: #ff8080; }
+    .opt-btn:disabled { cursor: default; }
+
+    .feedback-box {
+      background: #0d1117; border: 2px solid #555; border-radius: 4px;
+      padding: 12px; font-size: 8px; line-height: 2.2; color: #ccc;
+      margin-bottom: 12px; display: none; white-space: pre-wrap;
+    }
+    .feedback-box.show { display: block; }
+    .feedback-box.correct-fb { border-color: #5dde2e; color: #a0ff80; }
+    .feedback-box.wrong-fb { border-color: #e24b4a; color: #ff9090; }
+
+    .next-btn {
+      font-family: 'Press Start 2P', monospace; font-size: 8px;
+      width: 100%; padding: 12px; background: #1a3a0a;
+      border: 2px solid #5dde2e; border-radius: 4px; color: #5dde2e;
+      cursor: pointer; display: none; transition: all 0.12s;
+    }
+    .next-btn.show { display: block; }
+    .next-btn:hover { background: #2a5a15; }
+
+    .home-btn {
+      font-family: 'Press Start 2P', monospace; font-size: 7px;
+      padding: 8px 12px; background: transparent; border: 2px solid #555;
+      border-radius: 4px; color: #888; cursor: pointer; margin-bottom: 14px;
+    }
+    .home-btn:hover { border-color: #888; color: #ccc; }
+
+    .screen { display: none; }
+    .screen.active { display: block; }
+
+    .leaderboard { margin-top: 10px; }
+    .lb-row { display: flex; justify-content: space-between; align-items: center; padding: 6px 8px; border-bottom: 1px solid #222; font-size: 7px; }
+    .lb-row:first-child { color: #ffd700; }
+    .lb-row:nth-child(2) { color: #ccc; }
+    .lb-row:nth-child(3) { color: #cd7f32; }
+
+    .name-input {
+      font-family: 'Press Start 2P', monospace; font-size: 9px;
+      background: #0d1117; border: 2px solid #5dde2e; border-radius: 4px;
+      color: #fff; padding: 10px; width: 100%; margin-bottom: 10px; outline: none;
+    }
+    .name-input:focus { border-color: #a0ff60; }
+
+    .start-btn {
+      font-family: 'Press Start 2P', monospace; font-size: 9px;
+      width: 100%; padding: 12px; background: #1a3a0a;
+      border: 2px solid #5dde2e; border-radius: 4px; color: #5dde2e;
+      cursor: pointer; margin-bottom: 20px; transition: all 0.12s;
+    }
+    .start-btn:hover { background: #2a5a15; }
+
+    .section-title { font-size: 8px; color: #aaa; margin-bottom: 10px; }
+  </style>
+</head>
+<body>
+<div class="mc-wrap">
+
+  <div class="mc-header">
+    <div class="mc-title">⛏ SATs QUEST ⛏</div>
+    <div class="mc-subtitle">Year 6 edition — survive the Overworld of learning</div>
+  </div>
+
+  <!-- NAME ENTRY SCREEN -->
+  <div id="screen-name" class="screen active">
+    <div class="section-title">Enter your Minecraft name:</div>
+    <input class="name-input" id="player-name-input" type="text" maxlength="16" placeholder="Steve..." />
+    <button class="start-btn" onclick="setName()">▶ Start Quest</button>
+
+    <div class="section-title">🏆 Leaderboard</div>
+    <div class="leaderboard" id="leaderboard-home"></div>
+  </div>
+
+  <!-- HOME SCREEN -->
+  <div id="screen-home" class="screen">
+    <div class="stats-row">
+      <div class="stat-box"><div class="stat-label">Level</div><div class="stat-val gold" id="home-level">1</div></div>
+      <div class="stat-box"><div class="stat-label">XP</div><div class="stat-val green" id="home-xp">0</div></div>
+      <div class="stat-box"><div class="stat-label">Streak</div><div class="stat-val blue" id="home-streak">0 🔥</div></div>
+      <div class="stat-box"><div class="stat-label">Correct</div><div class="stat-val" id="home-correct">0</div></div>
+    </div>
+
+    <div class="xp-bar-wrap"><div class="xp-bar" id="home-xp-bar" style="width:0%"></div></div>
+    <div class="xp-label" id="home-xp-label">0 / 100 XP to next level</div>
+
+    <div class="badge-row" id="badge-row">
+      <div class="badge" id="badge-5">🏅 5 correct</div>
+      <div class="badge" id="badge-10">🥈 10 correct</div>
+      <div class="badge" id="badge-streak">🔥 5 streak</div>
+      <div class="badge" id="badge-20">🥇 20 correct</div>
+      <div class="badge" id="badge-maths">⚒ Maths master</div>
+      <div class="badge" id="badge-english">📖 English expert</div>
+    </div>
+
+    <div class="subject-btns">
+      <button class="subj-btn maths" onclick="startQuiz('maths')">⚒ Maths<br><br>Numbers, fractions,<br>geometry & more</button>
+      <button class="subj-btn english" onclick="startQuiz('english')">📖 English<br><br>Grammar, punctuation,<br>vocab & SPaG</button>
+      <button class="subj-btn mixed" onclick="startQuiz('mixed')">🎲 Mixed<br><br>Random maths<br>& English</button>
+    </div>
+
+    <div class="section-title">🏆 Leaderboard</div>
+    <div class="leaderboard" id="leaderboard-main"></div>
+
+    <br/>
+    <button class="home-btn" onclick="goNameScreen()">← Change player</button>
+  </div>
+
+  <!-- QUIZ SCREEN -->
+  <div id="screen-quiz" class="screen">
+    <button class="home-btn" onclick="goHome()">← Back to base</button>
+
+    <div class="stats-row">
+      <div class="stat-box"><div class="stat-label">Level</div><div class="stat-val gold" id="q-level">1</div></div>
+      <div class="stat-box"><div class="stat-label">XP</div><div class="stat-val green" id="q-xp">0</div></div>
+      <div class="stat-box"><div class="stat-label">Streak</div><div class="stat-val blue" id="q-streak">0 🔥</div></div>
+    </div>
+    <div class="xp-bar-wrap"><div class="xp-bar" id="q-xp-bar" style="width:0%"></div></div>
+
+    <div class="question-card">
+      <div class="mc-icon" id="q-icon">⛏</div>
+      <div class="q-text" id="q-text"><span class="q-loading">Loading quest...</span></div>
+    </div>
+
+    <div class="options-grid" id="options-grid"></div>
+    <div class="feedback-box" id="feedback-box"></div>
+    <button class="next-btn" id="next-btn" onclick="loadQuestion()">Next quest ➜</button>
+  </div>
+
+</div>
+
+<script>
+const XP_PER_LEVEL = 100;
+const icons = {
+  maths: ['⛏','🪓','⚒','🔨','🧱','💎','🗡️'],
+  english: ['📖','📜','✏️','🗺️','📚','🔡','💬'],
+  mixed: ['🎲','⭐','🌟','🏆']
+};
+
+let state = {
+  name: '',
+  xp: 0, level: 1, streak: 0, totalCorrect: 0,
+  mathsCorrect: 0, englishCorrect: 0,
+  subject: 'maths', loading: false, history: []
+};
+
+function loadState() {
+  const saved = localStorage.getItem('sats-quest-' + state.name);
+  if (saved) {
+    const s = JSON.parse(saved);
+    state = { ...state, ...s };
+  }
+}
+
+function saveState() {
+  localStorage.setItem('sats-quest-' + state.name, JSON.stringify({
+    xp: state.xp, level: state.level, streak: state.streak,
+    totalCorrect: state.totalCorrect, mathsCorrect: state.mathsCorrect, englishCorrect: state.englishCorrect
+  }));
+  saveLeaderboard();
+}
+
+function saveLeaderboard() {
+  const lb = getLeaderboard();
+  const existing = lb.findIndex(e => e.name === state.name);
+  if (existing >= 0) lb[existing] = { name: state.name, xp: state.xp, level: state.level };
+  else lb.push({ name: state.name, xp: state.xp, level: state.level });
+  lb.sort((a, b) => b.xp - a.xp);
+  localStorage.setItem('sats-quest-leaderboard', JSON.stringify(lb.slice(0, 10)));
+}
+
+function getLeaderboard() {
+  return JSON.parse(localStorage.getItem('sats-quest-leaderboard') || '[]');
+}
+
+function renderLeaderboard(id) {
+  const lb = getLeaderboard();
+  const el = document.getElementById(id);
+  if (!lb.length) { el.innerHTML = '<div class="lb-row" style="color:#555">No players yet!</div>'; return; }
+  el.innerHTML = lb.slice(0,5).map((e, i) => {
+    const medals = ['🥇','🥈','🥉','4.','5.'];
+    return `<div class="lb-row"><span>${medals[i]} ${e.name}</span><span>Lv.${e.level} · ${e.xp} XP</span></div>`;
+  }).join('');
+}
+
+function setName() {
+  const val = document.getElementById('player-name-input').value.trim();
+  if (!val) return;
+  state.name = val;
+  loadState();
+  showScreen('screen-home');
+  updateUI();
+  renderLeaderboard('leaderboard-main');
+}
+
+function goNameScreen() {
+  showScreen('screen-name');
+  renderLeaderboard('leaderboard-home');
+}
+
+function goHome() {
+  showScreen('screen-home');
+  updateUI();
+  renderLeaderboard('leaderboard-main');
+}
+
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+function updateUI() {
+  const xpInLevel = state.xp % XP_PER_LEVEL;
+  const pct = (xpInLevel / XP_PER_LEVEL) * 100;
+  ['home','q'].forEach(p => {
+    const lv = document.getElementById(p+'-level'); if(lv) lv.textContent = state.level;
+    const xp = document.getElementById(p+'-xp'); if(xp) xp.textContent = state.xp;
+    const st = document.getElementById(p+'-streak'); if(st) st.textContent = state.streak + ' 🔥';
+    const bar = document.getElementById(p+'-xp-bar'); if(bar) bar.style.width = pct + '%';
+  });
+  const hc = document.getElementById('home-correct'); if(hc) hc.textContent = state.totalCorrect;
+  const hl = document.getElementById('home-xp-label');
+  if(hl) hl.textContent = xpInLevel + ' / ' + XP_PER_LEVEL + ' XP to next level';
+  updateBadges();
+}
+
+function updateBadges() {
+  if(state.totalCorrect >= 5) document.getElementById('badge-5').classList.add('earned');
+  if(state.totalCorrect >= 10) document.getElementById('badge-10').classList.add('earned');
+  if(state.totalCorrect >= 20) document.getElementById('badge-20').classList.add('earned');
+  if(state.streak >= 5) document.getElementById('badge-streak').classList.add('earned');
+  if(state.mathsCorrect >= 10) document.getElementById('badge-maths').classList.add('earned');
+  if(state.englishCorrect >= 10) document.getElementById('badge-english').classList.add('earned');
+}
+
+function startQuiz(subject) {
+  state.subject = subject;
+  showScreen('screen-quiz');
+  loadQuestion();
+}
+
+function pickIcon() {
+  const arr = icons[state.subject] || icons.maths;
+  return arr[Math.floor(Math.random() * arr.length)];
+}
+
+async function loadQuestion() {
+  if(state.loading) return;
+  state.loading = true;
+  document.getElementById('next-btn').classList.remove('show');
+  document.getElementById('feedback-box').classList.remove('show','correct-fb','wrong-fb');
+  document.getElementById('options-grid').innerHTML = '';
+  document.getElementById('q-icon').textContent = pickIcon();
+  document.getElementById('q-text').innerHTML = '<span class="q-loading">Generating quest...</span>';
+
+  const subj = state.subject === 'mixed'
+    ? (Math.random() < 0.5 ? 'maths' : 'english')
+    : state.subject;
+  const recentTopics = state.history.slice(-4).map(h => h.topic).join(', ');
+
+  try {
+    const resp = await fetch('/.netlify/functions/question', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ subject: subj, recentTopics })
+    });
+
+    if (!resp.ok) throw new Error('API error');
+    const q = await resp.json();
+    state.history.push({ topic: q.topic });
+    renderQuestion(q);
+  } catch(e) {
+    document.getElementById('q-text').innerHTML = '<span style="color:#e24b4a;font-size:8px">⚠ Failed to load quest. Try again!</span>';
+    document.getElementById('next-btn').textContent = 'Try again ➜';
+    document.getElementById('next-btn').classList.add('show');
+  }
+  state.loading = false;
+}
+
+function renderQuestion(q) {
+  document.getElementById('q-text').textContent = q.question;
+  const grid = document.getElementById('options-grid');
+  grid.innerHTML = '';
+  q.options.forEach(opt => {
+    const btn = document.createElement('button');
+    btn.className = 'opt-btn';
+    btn.textContent = opt;
+    btn.onclick = () => checkAnswer(opt, q, btn);
+    grid.appendChild(btn);
+  });
+}
+
+function checkAnswer(chosen, q, btn) {
+  const chosenLetter = chosen.charAt(0);
+  const correct = chosenLetter === q.answer;
+  document.querySelectorAll('.opt-btn').forEach(b => {
+    b.disabled = true;
+    if(b.textContent.charAt(0) === q.answer) b.classList.add('correct');
+  });
+  if(!correct) btn.classList.add('wrong');
+
+  const fb = document.getElementById('feedback-box');
+  if(correct) {
+    state.streak++;
+    state.totalCorrect++;
+    if(q.subject === 'maths') state.mathsCorrect++;
+    if(q.subject === 'english') state.englishCorrect++;
+    const xpGain = 10 + (state.streak >= 3 ? 5 : 0);
+    state.xp += xpGain;
+    const newLevel = Math.floor(state.xp / XP_PER_LEVEL) + 1;
+    const levelUp = newLevel > state.level;
+    state.level = newLevel;
+    fb.className = 'feedback-box show correct-fb';
+    let msg = '✅ CORRECT! +' + xpGain + ' XP';
+    if(state.streak >= 3) msg += ' (🔥 streak bonus!)';
+    if(levelUp) msg += '\n\n⬆ LEVEL UP! You reached Level ' + state.level + '!';
+    msg += '\n\n' + q.explanation;
+    fb.textContent = msg;
+  } else {
+    state.streak = 0;
+    fb.className = 'feedback-box show wrong-fb';
+    fb.textContent = '❌ Not quite! The answer was ' + q.answer + '.\n\n' + q.explanation;
+  }
+  updateUI();
+  saveState();
+  document.getElementById('next-btn').classList.add('show');
+}
+
+window.onload = () => {
+  renderLeaderboard('leaderboard-home');
+  document.getElementById('player-name-input').addEventListener('keydown', e => {
+    if(e.key === 'Enter') setName();
+  });
+};
+</script>
+</body>
+</html>
