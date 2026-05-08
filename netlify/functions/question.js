@@ -12,11 +12,15 @@ Generate one multiple choice question based on real Year 6 SATs content (${subje
 Frame it in a Minecraft scenario to make it engaging and fun.
 Avoid recently used topics: ${recentTopics || 'none'}.
 
+DIFFICULTY: Match real Year 6 SATs papers exactly. Questions should be accessible to an average 10-11 year old. Do not make questions harder than the actual SATs papers. Keep numbers small and manageable.
+
+IMPORTANT: Vary which option is the correct answer. Do NOT always make A the correct answer. Randomly place the correct answer as A, B, C, or D with equal probability.
+
 Return ONLY valid JSON in this exact format (no markdown, no extra text):
 {
   "question": "The question text with Minecraft scenario",
   "options": ["A) option1", "B) option2", "C) option3", "D) option4"],
-  "answer": "A",
+  "answer": "B",
   "explanation": "Brief fun Minecraft-flavoured explanation of why this is correct",
   "topic": "short topic name",
   "subject": "${subject}"
@@ -54,14 +58,6 @@ Make the Minecraft context fun — use Creepers, Steve, building, mining, redsto
       res.on('end', () => {
         try {
           const parsed = JSON.parse(data);
-          if (parsed.error) {
-            resolve({
-              statusCode: 200,
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ question: 'API Error: ' + parsed.error.message, options: ['A) '+parsed.error.type,'B) Check API key','C) Check billing','D) Contact support'], answer: 'A', explanation: data, topic: 'error', subject: subject })
-            });
-            return;
-          }
           const raw = parsed.content.map(c => c.text || '').join('');
           const clean = raw.replace(/```json|```/g, '').trim();
           const question = JSON.parse(clean);
@@ -72,9 +68,8 @@ Make the Minecraft context fun — use Creepers, Steve, building, mining, redsto
           });
         } catch(err) {
           resolve({
-            statusCode: 200,
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ question: 'Parse error: ' + err.message, options: ['A) raw: '+data.substring(0,50),'B) -','C) -','D) -'], answer: 'A', explanation: data, topic: 'error', subject: subject })
+            statusCode: 500,
+            body: JSON.stringify({ error: 'Parse error', detail: err.message })
           });
         }
       });
@@ -82,9 +77,8 @@ Make the Minecraft context fun — use Creepers, Steve, building, mining, redsto
 
     req.on('error', (err) => {
       resolve({
-        statusCode: 200,
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ question: 'Network error: ' + err.message, options: ['A) error','B) -','C) -','D) -'], answer: 'A', explanation: err.message, topic: 'error', subject: subject })
+        statusCode: 500,
+        body: JSON.stringify({ error: 'Request error', detail: err.message })
       });
     });
 
