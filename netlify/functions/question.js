@@ -29,7 +29,7 @@ For ENGLISH topics use: punctuation (commas, apostrophes, colons, semi-colons), 
 Make the Minecraft context fun — use Creepers, Steve, building, mining, redstone, potions, Endermen, villages, the Nether, etc. Keep language age-appropriate for a 10-11 year old.`;
 
   const body = JSON.stringify({
-    model: 'claude-3-5-sonnet-20241022',
+    model: 'claude-3-haiku-20240307',
     max_tokens: 1000,
     system: systemPrompt,
     messages: [{ role: 'user', content: 'Generate a question now.' }]
