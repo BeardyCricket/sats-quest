@@ -1,3 +1,5 @@
+const https = require('https');
+
 exports.handler = async function(event) {
   if (event.httpMethod !== 'POST') {
     return { statusCode: 405, body: 'Method Not Allowed' };
@@ -26,36 +28,57 @@ For ENGLISH topics use: punctuation (commas, apostrophes, colons, semi-colons), 
 
 Make the Minecraft context fun — use Creepers, Steve, building, mining, redstone, potions, Endermen, villages, the Nether, etc. Keep language age-appropriate for a 10-11 year old.`;
 
-  try {
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
+  const body = JSON.stringify({
+    model: 'claude-sonnet-4-20250514',
+    max_tokens: 1000,
+    system: systemPrompt,
+    messages: [{ role: 'user', content: 'Generate a question now.' }]
+  });
+
+  return new Promise((resolve) => {
+    const options = {
+      hostname: 'api.anthropic.com',
+      path: '/v1/messages',
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'x-api-key': process.env.ANTHROPIC_API_KEY,
-        'anthropic-version': '2023-06-01'
-      },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 1000,
-        system: systemPrompt,
-        messages: [{ role: 'user', content: 'Generate a question now.' }]
-      })
+        'anthropic-version': '2023-06-01',
+        'Content-Length': Buffer.byteLength(body)
+      }
+    };
+
+    const req = https.request(options, (res) => {
+      let data = '';
+      res.on('data', chunk => data += chunk);
+      res.on('end', () => {
+        try {
+          const parsed = JSON.parse(data);
+          const raw = parsed.content.map(c => c.text || '').join('');
+          const clean = raw.replace(/```json|```/g, '').trim();
+          const question = JSON.parse(clean);
+          resolve({
+            statusCode: 200,
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(question)
+          });
+        } catch(err) {
+          resolve({
+            statusCode: 500,
+            body: JSON.stringify({ error: 'Parse error', detail: err.message, raw: data })
+          });
+        }
+      });
     });
 
-    const data = await response.json();
-    const raw = data.content.map(c => c.text || '').join('');
-    const clean = raw.replace(/```json|```/g, '').trim();
-    const question = JSON.parse(clean);
+    req.on('error', (err) => {
+      resolve({
+        statusCode: 500,
+        body: JSON.stringify({ error: 'Request error', detail: err.message })
+      });
+    });
 
-    return {
-      statusCode: 200,
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(question)
-    };
-  } catch (err) {
-    return {
-      statusCode: 500,
-      body: JSON.stringify({ error: 'Failed to generate question', detail: err.message })
-    };
-  }
+    req.write(body);
+    req.end();
+  });
 };
