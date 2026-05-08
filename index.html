@@ -64,15 +64,15 @@
       display: flex; align-items: flex-start; gap: 10px;
     }
     .mc-icon { font-size: 32px; flex-shrink: 0; margin-top: 2px; }
-    .q-text { font-size: 9px; color: #e8e8e8; line-height: 2; flex: 1; }
+    .q-text { font-size: 11px; color: #ffffff; line-height: 2.2; flex: 1; }
     .q-loading { color: #5dde2e; animation: blink 0.8s infinite; }
     @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
 
     .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 14px; }
     .opt-btn {
-      font-family: 'Press Start 2P', monospace; font-size: 8px;
-      padding: 11px 8px; background: #1a1a2e; border: 2px solid #444;
-      border-radius: 4px; color: #ccc; cursor: pointer; text-align: left; line-height: 1.7; transition: all 0.12s;
+      font-family: 'Press Start 2P', monospace; font-size: 10px;
+      padding: 13px 10px; background: #1a1a2e; border: 2px solid #444;
+      border-radius: 4px; color: #ccc; cursor: pointer; text-align: left; line-height: 1.8; transition: all 0.12s;
     }
     .opt-btn:hover:not(:disabled) { border-color: #5dde2e; color: #fff; background: #0d1f0d; }
     .opt-btn.correct { border-color: #5dde2e; background: #0d3010; color: #a0ff80; }
@@ -81,7 +81,7 @@
 
     .feedback-box {
       background: #0d1117; border: 2px solid #555; border-radius: 4px;
-      padding: 12px; font-size: 8px; line-height: 2.2; color: #ccc;
+      padding: 12px; font-size: 9px; line-height: 2.4; color: #ddd;
       margin-bottom: 12px; display: none; white-space: pre-wrap;
     }
     .feedback-box.show { display: block; }
@@ -139,17 +139,14 @@
     <div class="mc-subtitle">Year 6 edition — survive the Overworld of learning</div>
   </div>
 
-  <!-- NAME ENTRY SCREEN -->
   <div id="screen-name" class="screen active">
     <div class="section-title">Enter your Minecraft name:</div>
     <input class="name-input" id="player-name-input" type="text" maxlength="16" placeholder="Steve..." />
     <button class="start-btn" onclick="setName()">▶ Start Quest</button>
-
     <div class="section-title">🏆 Leaderboard</div>
     <div class="leaderboard" id="leaderboard-home"></div>
   </div>
 
-  <!-- HOME SCREEN -->
   <div id="screen-home" class="screen">
     <div class="stats-row">
       <div class="stat-box"><div class="stat-label">Level</div><div class="stat-val gold" id="home-level">1</div></div>
@@ -157,10 +154,8 @@
       <div class="stat-box"><div class="stat-label">Streak</div><div class="stat-val blue" id="home-streak">0 🔥</div></div>
       <div class="stat-box"><div class="stat-label">Correct</div><div class="stat-val" id="home-correct">0</div></div>
     </div>
-
     <div class="xp-bar-wrap"><div class="xp-bar" id="home-xp-bar" style="width:0%"></div></div>
     <div class="xp-label" id="home-xp-label">0 / 100 XP to next level</div>
-
     <div class="badge-row" id="badge-row">
       <div class="badge" id="badge-5">🏅 5 correct</div>
       <div class="badge" id="badge-10">🥈 10 correct</div>
@@ -169,36 +164,29 @@
       <div class="badge" id="badge-maths">⚒ Maths master</div>
       <div class="badge" id="badge-english">📖 English expert</div>
     </div>
-
     <div class="subject-btns">
       <button class="subj-btn maths" onclick="startQuiz('maths')">⚒ Maths<br><br>Numbers, fractions,<br>geometry & more</button>
       <button class="subj-btn english" onclick="startQuiz('english')">📖 English<br><br>Grammar, punctuation,<br>vocab & SPaG</button>
       <button class="subj-btn mixed" onclick="startQuiz('mixed')">🎲 Mixed<br><br>Random maths<br>& English</button>
     </div>
-
     <div class="section-title">🏆 Leaderboard</div>
     <div class="leaderboard" id="leaderboard-main"></div>
-
     <br/>
     <button class="home-btn" onclick="goNameScreen()">← Change player</button>
   </div>
 
-  <!-- QUIZ SCREEN -->
   <div id="screen-quiz" class="screen">
     <button class="home-btn" onclick="goHome()">← Back to base</button>
-
     <div class="stats-row">
       <div class="stat-box"><div class="stat-label">Level</div><div class="stat-val gold" id="q-level">1</div></div>
       <div class="stat-box"><div class="stat-label">XP</div><div class="stat-val green" id="q-xp">0</div></div>
       <div class="stat-box"><div class="stat-label">Streak</div><div class="stat-val blue" id="q-streak">0 🔥</div></div>
     </div>
     <div class="xp-bar-wrap"><div class="xp-bar" id="q-xp-bar" style="width:0%"></div></div>
-
     <div class="question-card">
       <div class="mc-icon" id="q-icon">⛏</div>
       <div class="q-text" id="q-text"><span class="q-loading">Loading quest...</span></div>
     </div>
-
     <div class="options-grid" id="options-grid"></div>
     <div class="feedback-box" id="feedback-box"></div>
     <button class="next-btn" id="next-btn" onclick="loadQuestion()">Next quest ➜</button>
@@ -341,7 +329,6 @@ async function loadQuestion() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ subject: subj, recentTopics })
     });
-
     if (!resp.ok) throw new Error('API error');
     const q = await resp.json();
     state.history.push({ topic: q.topic });
